@@ -45,8 +45,11 @@ export default function ProductDetailScreen() {
   }
 
   const discount = discountPercent(product.originalPrice, product.price);
+  const isInteracting = React.useRef(false);
 
   const handleAddToCart = () => {
+    if (isInteracting.current) return;
+    isInteracting.current = true;
     Alert.alert(
       '🛒 Tambah ke Keranjang?',
       `${product.name}\n${formatRupiah(product.price)}`,
@@ -54,6 +57,7 @@ export default function ProductDetailScreen() {
         {
           text: 'Batal',
           style: 'cancel',
+          onPress: () => { isInteracting.current = false; }
         },
         {
           text: 'Tambahkan',
@@ -64,10 +68,13 @@ export default function ProductDetailScreen() {
               '✅ Berhasil!',
               `${product.name} sudah ditambahkan ke keranjang.`,
               [
-                { text: 'Lanjut Belanja', style: 'cancel' },
+                { text: 'Lanjut Belanja', style: 'cancel', onPress: () => { isInteracting.current = false; } },
                 {
                   text: 'Lihat Keranjang',
-                  onPress: () => router.push('/cart'),
+                  onPress: () => {
+                     isInteracting.current = false;
+                     router.push('/cart');
+                  },
                 },
               ]
             );
@@ -78,8 +85,11 @@ export default function ProductDetailScreen() {
   };
 
   const handleBuyNow = () => {
+    if (isInteracting.current) return;
+    isInteracting.current = true;
     addToCart(product);
     router.push('/cart');
+    setTimeout(() => { isInteracting.current = false; }, 500);
   };
 
   return (
