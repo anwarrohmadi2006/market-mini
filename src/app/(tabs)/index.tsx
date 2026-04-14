@@ -1,7 +1,7 @@
 // src/app/(tabs)/index.tsx
 // Halaman Beranda utama marketplace
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -411,6 +411,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     height: 44,
     gap: 8,
+  },
+  searchWrapperFocused: {
+    borderColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
   searchIcon: {
     fontSize: 16,
