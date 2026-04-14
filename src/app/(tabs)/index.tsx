@@ -112,7 +112,7 @@ const SearchBar = ({ onSearch, onClear, clearTrigger }: SearchBarProps) => {
       )}
     </View>
   );
-});
+};
 
 // ---------------------
 // Section Header
