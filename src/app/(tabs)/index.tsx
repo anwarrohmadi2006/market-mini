@@ -1,7 +1,7 @@
 // src/app/(tabs)/index.tsx
 // Halaman Beranda utama marketplace
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -57,7 +57,7 @@ interface SearchBarProps {
   clearTrigger: number;
 }
 
-const SearchBar = React.memo(({ onSearch, onClear, clearTrigger }: SearchBarProps) => {
+const SearchBar = ({ onSearch, onClear, clearTrigger }: SearchBarProps) => {
   const [localQuery, setLocalQuery] = useState('');
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -85,7 +85,7 @@ const SearchBar = React.memo(({ onSearch, onClear, clearTrigger }: SearchBarProp
   };
 
   return (
-    <View style={[styles.searchWrapper, focused && styles.searchWrapperFocused]}>
+    <View style={styles.searchWrapper}>
       <Text style={styles.searchIcon}>🔍</Text>
       <TextInput
         ref={inputRef}
@@ -127,15 +127,15 @@ function SectionTitle({ title, subtitle }: { title: string; subtitle?: string })
 }
 
 // ---------------------
-// Memoized List Header
+// List Header
 // ---------------------
-const MemoizedListHeader = React.memo(({ 
+function ListHeader({ 
   isSearching, 
   searchQuery, 
   displayedProductsCount, 
   selectedCategory, 
   onSelectCategory 
-}: any) => {
+}: any) {
   return (
     <View>
       {!isSearching && (
@@ -168,7 +168,7 @@ const MemoizedListHeader = React.memo(({
       </View>
     </View>
   );
-});
+}
 
 // ---------------------
 // Main Screen
@@ -196,30 +196,25 @@ export default function HomeScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Filter gabungan (kategori + pencarian teks) dengan useMemo
+  // Filter gabungan (kategori + pencarian teks)
   const isSearching = searchQuery.trim().length > 0;
-  const displayedProducts = useMemo(() => {
-    let base = products;
-    
-    if (selectedCategory !== 'cat-all') {
-      base = base.filter((p) => p.category === selectedCategory);
-    }
-    
-    if (isSearching) {
-      const q = searchQuery.trim().toLowerCase();
-      base = base.filter((p) => {
-        const catName = categories.find((c) => c.id === p.category)?.name.toLowerCase() || "";
-        return (
-          p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q)) ||
-          catName.includes(q)
-        );
-      });
-    }
-    
-    return base;
-  }, [products, searchQuery, selectedCategory, isSearching]);
+  
+  let displayedProducts = products;
+  if (selectedCategory !== 'cat-all') {
+    displayedProducts = displayedProducts.filter((p) => p.category === selectedCategory);
+  }
+  if (isSearching) {
+    const q = searchQuery.trim().toLowerCase();
+    displayedProducts = displayedProducts.filter((p) => {
+      const catName = categories.find((c) => c.id === p.category)?.name.toLowerCase() || "";
+      return (
+        p.name.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q) ||
+        p.tags.some((t) => t.toLowerCase().includes(q)) ||
+        catName.includes(q)
+      );
+    });
+  }
 
   // Handler search bar
   const handleSearchChange = useCallback((text: string) => {
@@ -304,7 +299,7 @@ export default function HomeScreen() {
               </View>
             </View>
           ) : (
-            <MemoizedListHeader 
+            <ListHeader 
               isSearching={isSearching}
               searchQuery={searchQuery}
               displayedProductsCount={displayedProducts.length}
@@ -411,14 +406,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     height: 44,
     gap: 8,
-  },
-  searchWrapperFocused: {
-    borderColor: Colors.primary,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
   },
   searchIcon: {
     fontSize: 16,
