@@ -12,6 +12,7 @@ import {
   StatusBar,
   TouchableOpacity,
   TextInput,
+  Keyboard,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 
