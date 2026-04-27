@@ -1,7 +1,7 @@
 // src/app/product/[id].tsx
 // Halaman Detail Produk
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
-  Alert,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -20,6 +20,7 @@ import { useCart } from '../../context/CartContext';
 import { formatRupiah, discountPercent } from '../../utils/currency';
 import StarRating from '../../components/StarRating';
 import Badge from '../../components/Badge';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const allProducts = [...initialProducts, ...extraProducts];
 
@@ -27,6 +28,10 @@ export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { addToCart } = useCart();
+
+  // Modal states
+  const [modalVisible, setModalVisible] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const product = useMemo(
     () => allProducts.find((p) => p.id === id),
@@ -50,38 +55,7 @@ export default function ProductDetailScreen() {
   const handleAddToCart = () => {
     if (isInteracting.current) return;
     isInteracting.current = true;
-    Alert.alert(
-      '🛒 Tambah ke Keranjang?',
-      `${product.name}\n${formatRupiah(product.price)}`,
-      [
-        {
-          text: 'Batal',
-          style: 'cancel',
-          onPress: () => { isInteracting.current = false; }
-        },
-        {
-          text: 'Tambahkan',
-          style: 'default',
-          onPress: () => {
-            addToCart(product);
-            Alert.alert(
-              '✅ Berhasil!',
-              `${product.name} sudah ditambahkan ke keranjang.`,
-              [
-                { text: 'Lanjut Belanja', style: 'cancel', onPress: () => { isInteracting.current = false; } },
-                {
-                  text: 'Lihat Keranjang',
-                  onPress: () => {
-                     isInteracting.current = false;
-                     router.push('/cart');
-                  },
-                },
-              ]
-            );
-          },
-        },
-      ]
-    );
+    setModalVisible(true);
   };
 
   const handleBuyNow = () => {
@@ -199,6 +173,67 @@ export default function ProductDetailScreen() {
           <Text style={styles.buyNowText}>Beli Sekarang</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal: Konfirmasi Tambah ke Keranjang */}
+      <ConfirmModal
+        visible={modalVisible}
+        title="🛒 Tambah ke Keranjang?"
+        message={`${product.name}\n${formatRupiah(product.price)}`}
+        onDismiss={() => {
+          setModalVisible(false);
+          isInteracting.current = false;
+        }}
+        buttons={[
+          {
+            text: 'Batal',
+            style: 'cancel',
+            onPress: () => {
+              setModalVisible(false);
+              isInteracting.current = false;
+            },
+          },
+          {
+            text: 'Tambahkan',
+            style: 'default',
+            onPress: () => {
+              setModalVisible(false);
+              addToCart(product);
+              // Tampilkan modal sukses
+              setTimeout(() => setSuccessModalVisible(true), 150);
+            },
+          },
+        ]}
+      />
+
+      {/* Modal: Berhasil Ditambahkan */}
+      <ConfirmModal
+        visible={successModalVisible}
+        title="✅ Berhasil!"
+        message={`${product.name} sudah ditambahkan ke keranjang.`}
+        onDismiss={() => {
+          setSuccessModalVisible(false);
+          isInteracting.current = false;
+        }}
+        buttons={[
+          {
+            text: 'Lanjut Belanja',
+            style: 'cancel',
+            onPress: () => {
+              setSuccessModalVisible(false);
+              isInteracting.current = false;
+            },
+          },
+          {
+            text: 'Lihat Keranjang',
+            style: 'default',
+            onPress: () => {
+              setSuccessModalVisible(false);
+              isInteracting.current = false;
+              router.push('/cart');
+            },
+          },
+        ]}
+      />
     </SafeAreaView>
   );
 }
@@ -398,11 +433,18 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     gap: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 8,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px -2px 8px rgba(0,0,0,0.08)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 8,
+      },
+    }),
   },
   addToCartBtn: {
     flex: 1,

@@ -7,7 +7,8 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
+  Platform,
 } from 'react-native';
 import Colors from '../constants/colors';
 import { Product } from '../data/products';
@@ -15,7 +16,6 @@ import { formatRupiah, discountPercent } from '../utils/currency';
 import Badge from './Badge';
 import StarRating from './StarRating';
 
-const CARD_WIDTH = (Dimensions.get('window').width - 48) / 2;
 
 interface Props {
   product: Product;
@@ -23,12 +23,14 @@ interface Props {
 }
 
 export default function ProductCard({ product, onPress }: Props) {
+  const { width } = useWindowDimensions();
+  const cardWidth = (width - 48) / 2;
   const [wished, setWished] = useState(false);
   const discount = discountPercent(product.originalPrice, product.price);
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, { width: cardWidth }]}
       activeOpacity={0.88}
       onPress={() => onPress(product)}
     >
@@ -84,15 +86,21 @@ export default function ProductCard({ product, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    width: CARD_WIDTH,
     backgroundColor: Colors.card,
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 3,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 8px rgba(0,0,0,0.07)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.07,
+        shadowRadius: 8,
+        elevation: 3,
+      },
+    }),
     overflow: 'hidden',
   },
   imagePlaceholder: {

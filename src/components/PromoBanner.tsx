@@ -7,24 +7,22 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
   TouchableOpacity,
 } from 'react-native';
 import { PromoBanner as PromoBannerType } from '../data/products';
 import Colors from '../constants/colors';
 
-const SCREEN_W = Dimensions.get('window').width;
-const BANNER_W = SCREEN_W - 32;
 
 interface Props {
   banners: PromoBannerType[];
 }
 
-function BannerItem({ item }: { item: PromoBannerType }) {
+function BannerItem({ item, bannerWidth }: { item: PromoBannerType; bannerWidth: number }) {
   return (
     <TouchableOpacity
       activeOpacity={0.92}
-      style={[styles.banner, { backgroundColor: item.color }]}
+      style={[styles.banner, { backgroundColor: item.color, width: bannerWidth }]}
     >
       {/* Decorative circles */}
       <View
@@ -58,11 +56,13 @@ function BannerItem({ item }: { item: PromoBannerType }) {
 }
 
 export default function PromoBannerList({ banners }: Props) {
+  const { width } = useWindowDimensions();
+  const bannerWidth = width - 32;
   return (
     <FlatList
       data={banners}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <BannerItem item={item} />}
+      renderItem={({ item }) => <BannerItem item={item} bannerWidth={bannerWidth} />}
       horizontal
       showsHorizontalScrollIndicator={false}
       pagingEnabled
@@ -79,7 +79,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   banner: {
-    width: BANNER_W,
     height: 140,
     borderRadius: 16,
     padding: 20,

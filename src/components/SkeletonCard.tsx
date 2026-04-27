@@ -2,12 +2,13 @@
 // Shimmer skeleton loading placeholder untuk ProductCard
 
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet, Dimensions } from 'react-native';
+import { View, Animated, StyleSheet, useWindowDimensions, Platform } from 'react-native';
 import Colors from '../constants/colors';
 
-const CARD_WIDTH = (Dimensions.get('window').width - 48) / 2;
 
 export default function SkeletonCard() {
+  const { width } = useWindowDimensions();
+  const cardWidth = (width - 48) / 2;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function SkeletonCard() {
   });
 
   return (
-    <Animated.View style={[styles.card, { opacity }]}>
+    <Animated.View style={[styles.card, { width: cardWidth, opacity }]}>
       {/* Image placeholder */}
       <View style={styles.imagePlaceholder} />
       {/* Badge placeholder */}
@@ -53,16 +54,22 @@ export default function SkeletonCard() {
 
 const styles = StyleSheet.create({
   card: {
-    width: CARD_WIDTH,
     backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 10,
     marginBottom: 12,
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 6,
-    elevation: 3,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 6px rgba(0,0,0,0.08)',
+      },
+      default: {
+        shadowColor: Colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 6,
+        elevation: 3,
+      },
+    }),
   },
   imagePlaceholder: {
     width: '100%',

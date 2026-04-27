@@ -8,11 +8,12 @@ export type ThemedTextProps = TextProps & {
   themeColor?: ThemeColor;
 };
 
-export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
+export function ThemedText({ style, type = 'default', themeColor, pointerEvents, ...rest }: ThemedTextProps) {
   const theme = useTheme();
 
   return (
     <Text
+      {...rest}
       style={[
         { color: theme[themeColor ?? 'text'] },
         type === 'default' && styles.default,
@@ -24,8 +25,8 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         type === 'linkPrimary' && styles.linkPrimary,
         type === 'code' && styles.code,
         style,
+        pointerEvents ? { pointerEvents } : null
       ]}
-      {...rest}
     />
   );
 }

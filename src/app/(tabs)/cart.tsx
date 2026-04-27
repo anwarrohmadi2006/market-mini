@@ -1,7 +1,7 @@
 // src/app/(tabs)/cart.tsx
 // Halaman Keranjang Belanja
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,35 +10,28 @@ import {
   SafeAreaView,
   TouchableOpacity,
   StatusBar,
-  Alert,
+  Platform,
 } from 'react-native';
 import Colors from '../../constants/colors';
 import { useCart } from '../../context/CartContext';
 import CartItem from '../../components/CartItem';
 import { formatRupiah } from '../../utils/currency';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const SHIPPING_FEE = 15_000;
 const SERVICE_FEE = 2_000;
 
 export default function CartScreen() {
-  const { cartItems, addToCart, removeFromCart, increaseQty, decreaseQty, clearCart, totalPrice, totalItems } =
+  const { cartItems, removeFromCart, increaseQty, decreaseQty, clearCart, totalPrice, totalItems } =
     useCart();
+
+  const [checkoutModalVisible, setCheckoutModalVisible] = useState(false);
 
   const grandTotal = totalPrice + (cartItems.length > 0 ? SHIPPING_FEE + SERVICE_FEE : 0);
 
   const handleCheckout = () => {
     if (cartItems.length === 0) return;
-    Alert.alert(
-      '✅ Pesanan Dikonfirmasi',
-      `Total pembayaran: ${formatRupiah(grandTotal)}\n\nTerima kasih telah berbelanja di Market Mini! 🎉`,
-      [
-        {
-          text: 'Lanjut Belanja',
-          onPress: clearCart,
-          style: 'default',
-        },
-      ]
-    );
+    setCheckoutModalVisible(true);
   };
 
   // ---------------------
@@ -154,6 +147,29 @@ export default function CartScreen() {
           <Text style={styles.checkoutBtnText}>Beli Sekarang ({totalItems})</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal: Konfirmasi Checkout */}
+      <ConfirmModal
+        visible={checkoutModalVisible}
+        title="✅ Konfirmasi Pesanan"
+        message={`Total pembayaran: ${formatRupiah(grandTotal)}\n\nLanjutkan checkout?`}
+        onDismiss={() => setCheckoutModalVisible(false)}
+        buttons={[
+          {
+            text: 'Batal',
+            style: 'cancel',
+            onPress: () => setCheckoutModalVisible(false),
+          },
+          {
+            text: 'Bayar Sekarang',
+            style: 'default',
+            onPress: () => {
+              setCheckoutModalVisible(false);
+              clearCart();
+            },
+          },
+        ]}
+      />
     </SafeAreaView>
   );
 }
@@ -202,11 +218,18 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 14,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 1px 4px rgba(0,0,0,0.06)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        elevation: 2,
+      },
+    }),
   },
   summaryTitle: {
     fontSize: 15,
@@ -259,11 +282,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingBottom: 20,
     gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 8,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px -2px 8px rgba(0,0,0,0.08)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 8,
+      },
+    }),
   },
   checkoutTotal: {
     flex: 1,
